@@ -2,10 +2,19 @@
 <html>
   <head>
     <title>Socket.IO chat</title>
+
+    <!-- 最新編譯和最佳化的 CSS -->    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+    <!-- 選擇性佈景主題 -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+    <!-- 最新編譯和最佳化的 JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
-
       #m{ 
         border: 2px solid black; 
         padding: 10px; 
@@ -13,7 +22,6 @@
         margin: .5%; 
         position: fixed; 
         bottom: 0;
-
       }
       #send{ 
         width: 8%; 
@@ -27,9 +35,19 @@
         right:5px;
       }
       #message_block{
-        width:100%;
+        
         position: absolute;
         top:0;
+        bottom:5%;
+        margin-bottom:10px;
+        border: solid 2px black; 
+        overflow:auto;
+      }
+      #online_block{
+        
+        position: absolute;
+        top:0;
+        left:70%;
         bottom:5%;
         margin-bottom:10px;
         border: solid 2px black; 
@@ -49,6 +67,7 @@
         background: #eee; 
       }
     </style>
+
 
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
@@ -133,10 +152,13 @@
         }*/
 		
 		function appendMessageWithColor(msg, userColor){
-		  $('#messages').append($('<li>').text(msg)); //設定字
-		  $("li:last").css("background-color", userColor); //設定顏色
-          var message = document.getElementById("message_block");//設定卷軸Bar
-          message.scrollTop = message.scrollHeight;
+		  $('#messages').append($('<li class="col-md-12">').text(msg)); //設定字
+		  $('#messages> li:last').css("background-color", userColor); //設定不同人聊天背景顏色
+      
+      //$("li:last").css("background-color", userColor); //設定名單顏色
+
+      var message = document.getElementById("message_block");//設定卷軸Bar
+      message.scrollTop = message.scrollHeight;
 		}
 		
       });
@@ -144,9 +166,29 @@
     </script>
   </head>
   <body>
-  <div id="message_block">
-    <ul id="messages"></ul>
-  <div>
+
+    <div class="container-fluid" >
+      <div class="row">
+
+        <div id="message_block" class="col-md-8">
+          <ul id="messages"></ul>
+        </div>
+
+        <div id="online_block" class="col-md-4">
+          <ul id="online-list">
+            <li>test</li>
+            <li>test</li>
+            <li>test</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+      
+  
+    
+    
     <input id="m" autocomplete="off" /><button id="send">Send</button>
+
   </body>
 </html>
