@@ -56,7 +56,6 @@
       #messages { 
         list-style-type: none; 
         margin: 10px; 
-        
         padding: 0; 
       }
       #messages li { 
@@ -66,11 +65,17 @@
       #messages li:nth-child(odd) { 
         background: #eee; 
       }
+      #online-list{
+        list-style-type: none; 
+        margin: 10px; 
+        padding: 0; 
+      }
     </style>
 
 
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
     <script>
 
 
@@ -82,10 +87,10 @@
 
         var name = prompt("請輸入暱稱","guest");
 		
-		var firstTyping = true;		
-		var user_colors = ['blue','yellow','purple','orange']; //使用者可選擇的顏色
-		var colorRandom = Math.floor((Math.random() * 4));
-		var userColor = user_colors[colorRandom];
+    		var firstTyping = true;		
+    		var userColors = ['blue','yellow','purple','orange']; //使用者可選擇的顏色
+    		var colorRandom = Math.floor((Math.random() * 4));
+    		var userColor = userColors[colorRandom];
 		
         if(name=="" || name==null){
           name = "guest";
@@ -93,53 +98,58 @@
 
         //告訴server自己的名字
         socket.emit("add user",{
-		  username: name
-		});
+          username: name,
+          userColor: userColor
+		    });
 		
-		//監聽新user加入
-		socket.on('add user',function(data){		  
+		  //監聽新user加入
+		  socket.on('add user',function(data){		  
           appendMessageWithColor(data.username+"已加入","green");
-        });
-		
-        //監聽新訊息事件
-        socket.on('chat message', function(data){		  
-          appendMessageWithColor(data.username+":"+data.msg, data.userColor);
-        });
 
-		//監聽正在打字
-		socket.on('user is typing',function(data){
-          appendMessageWithColor(data.username+"正在打字","gray");
-        });
+          updateOnlineListWithColor(data.onlineList);
+      });
 		
-		//監聽有user離開
-        socket.on('user left',function(data){
-          appendMessageWithColor(data.username+"已離開","red");
-        });
+      //監聽新訊息事件
+      socket.on('chat message', function(data){		  
+        appendMessageWithColor(data.username+":"+data.msg, data.userColor);
+      });
 
-        $('#send').click(function(){
-		  firstTyping = true;  //已經送出訊息，可以再列印 user is typing 訊息  //prompt("firstTYPE已經設定為TRUE","!!!");
-          var text = $('#m').val();
-          socket.emit('chat message', {
-			text:text,
-			userColor:userColor
-		});
-          $('#m').val('');
-          return false;
-        });
-
-        $("#m").keydown(function(event){
+		  //監聽正在打字
+		  socket.on('user is typing',function(data){
+        appendMessageWithColor(data.username+"正在打字","gray");
+      });
 		
-		  if ( event.which == 13 ){				
-            $('#send').click();			
+		  //監聽有user離開
+      socket.on('user left',function(data){
+        appendMessageWithColor(data.username+"已離開","red");
+      });
+
+      $('#send').click(function(){
+		    firstTyping = true;  //已經送出訊息，可以再列印 user is typing 訊息  //prompt("firstTYPE已經設定為TRUE","!!!");
+        var text = $('#m').val();
+        
+        socket.emit('chat message', {
+			  text:text,
+			  userColor:userColor
+		    });
+
+        $('#m').val('');
+        return false;
+      });
+
+      $("#m").keydown(function(event){
+		
+		      if ( event.which == 13 ){
+            $('#send').click();		
           }
 		  
-		  else if( firstTyping == true ){
-		    socket.emit('user is typing', name);
-			firstTyping = false; //還沒送出訊息，不需要再次列印 user is typing 訊息
-		  }
-        });
+		      else if( firstTyping == true ){
+		        socket.emit('user is typing', name);
+            firstTyping = false; //還沒送出訊息，不需要再次列印 user is typing 訊息
+		      }
+      });
 
-		/*
+		    /*
         function appendMessage(msg){
           $('#messages').append($('<li>').text(msg));
 		  
@@ -151,20 +161,55 @@
 
         }*/
 		
-		function appendMessageWithColor(msg, userColor){
-		  $('#messages').append($('<li class="col-md-12">').text(msg)); //設定字
-		  $('#messages> li:last').css("background-color", userColor); //設定不同人聊天背景顏色
-      
-      //$("li:last").css("background-color", userColor); //設定名單顏色
+  		function appendMessageWithColor(msg, userColor)
+      {
+  		  $('#messages').append($('<li class="col-md-12">').text(msg)); //設定字
+  		  $('#messages> li:last').css("background-color", userColor); //設定不同人聊天背景顏色
+        
+        //$("li:last").css("background-color", userColor); //設定名單顏色
 
-      var message = document.getElementById("message_block");//設定卷軸Bar
-      message.scrollTop = message.scrollHeight;
-		}
-		
-      });
+        var message = document.getElementById("message_block");//設定卷軸Bar
+        message.scrollTop = message.scrollHeight;
+  		}
+
+      function updateOnlineListWithColor(onlineList)
+      {
+        /*
+        var out = "";
+        var i;
+        for(i = 0; i < onlineList.length; i++) 
+        {
+            out += ' <li> i=' + i +', '+ onlineList[i].username + ' </li><br> ';
+        }
+        document.getElementById("online-list").innerHTML = out;
+        */
+
+        $('#online-list').empty();//先清空child elements
+
+        var out = "";
+        var i;
+
+        for(i = 0; i<onlineList.length; i++) {
+            $('#online-list').append($('<li class="col-md-4">').text(onlineList[i].username)); //設定字
+            $('#online-list> li:last').css("background-color", onlineList[i].userColor); //設定不同人聊天背景顏色
+            $('#online-list').append($('<br>'));//換行
+        }        
+        //document.getElementById("online-list").innerHTML = out;
+        
+
+      }
+
+
+
+    });
       
     </script>
+
+    
+
   </head>
+
+
   <body>
 
     <div class="container-fluid" >
@@ -176,16 +221,19 @@
 
         <div id="online_block" class="col-md-4">
           <ul id="online-list">
-            <li>test</li>
-            <li>test</li>
-            <li>test</li>
           </ul>
         </div>
 
       </div>
     </div>
-      
-  
+
+<script>
+
+
+</script>
+
+
+<script src="online.js"></script>
     
     
     <input id="m" autocomplete="off" /><button id="send">Send</button>
