@@ -8,16 +8,9 @@ app.get('/', function(req, res){
 
 var user_count = 0;
 
-var onlineList_Text = ""; 
+//var onlineList_Text = ""; //此為登入登出要共同維護的名單
 
-// = '{"username": "Guest-Test", "userColor": "yellow" }';
-
-/*var onlineList_Text = 
-'{"username": "jack", "userColor": "blue" },' +
-'{"username": "merry", "userColor": "yellow" },' +
-'{"username": "Michael", "userColor": "orange" },' +
-'{"username": "jane", "userColor": "red"}';
-*/
+var onlineList_JSON=[]; //此為登入登出要共同維護的名單
 
 //當新的使用者連接進來的時候
 io.on('connection', function(socket){
@@ -31,33 +24,17 @@ io.on('connection', function(socket){
 		
 		console.log("new user:"+msg.username+" 登入. user_count= "+user_count);
 
-		if(user_count == 1) 
-		{//增加第一個人的 onlineList_Text 格式(前面不用逗號)
-			onlineList_Text = '{"username":"'+ msg.username +'","userColor":"'+ msg.userColor +'"}';
-			console.log("增加第一人 user_count = "+user_count);
-			console.log(onlineList_Text);
-		}
-		else if(user_count > 1)
-		{//增加使用者名單(username & userColor)
-			onlineList_Text = onlineList_Text + ',{"username":"'+ msg.username +'","userColor":"'+ msg.userColor +'"}';
-			console.log("增加一人 user_count= "+user_count);
-		}
+		addUsernameToList( msg.username, msg.userColor); //登入者加入名單
 
-		//console.log(onlineList_Text);
+		io.emit('update onlineList',{
+			onlineList: onlineList_JSON
+		});
 
-		var onlineList = JSON.parse('['+onlineList_Text+']'); //轉成JSON格式
-
-		/*列印 JSON 
-		var i;
-        for(i = 0; i < onlineList.length; i++) 
-        {
-            console.log("onlineList JSON: i="+i+", "+onlineList[i].username+" "+onlineList[i].userColor);
-        }*/
-
+		console.log("onlineList_JSON= "+onlineList_JSON);
+		console.log("onlineList= "+onlineList_JSON+"\n");
 
 		io.emit('add user',{
 			username: socket.username,
-			onlineList: onlineList
 		});
 		
 	});
@@ -65,7 +42,7 @@ io.on('connection', function(socket){
 	//監聽新訊息事件
 	socket.on('chat message', function(msg){
 
-		console.log(socket.username+":"+msg.username+", userColor:"+msg.userColor);
+		console.log(socket.username+":"+msg.text+", userColor:"+msg.userColor);
 
   		//發佈新訊息
 		io.emit('chat message', {
@@ -91,15 +68,22 @@ io.on('connection', function(socket){
 		
 		if(user_count > 0)
 		{
-			user_count--; //不允許人數小於0	
-		}
-		
-		console.log(socket.username+" left. user_count= "+user_count);
-		
-		//發佈新訊息
+			user_count--; //不允許人數小於0
+			removeUsernameFromList( socket.username, socket.userColor );
+			console.log("已減少一人: "+socket.username);
+		}		
+
+		//通知client有人離開訊息
 		io.emit('user left',{
 			username:socket.username
 		});
+
+		//通知client更新名單
+		io.emit('update onlineList',{
+			onlineList: onlineList_JSON
+		});
+
+		console.log(socket.username+" 離開了. 人數= "+user_count);
 	});
 
 
@@ -110,10 +94,43 @@ http.listen(process.env.PORT || 3000, function(){
 	console.log('listening on *:3000');
 });
 
-function addUserList(onlineList_Text, username, userColor)
+
+function addUsernameToList( username, userColor )
 {
-	onlineList_Text = onlineList_Text + ' ,{"username":" '+ username +' ", "userColor":" '+ userColor +' "} ';
-	return onlineList_Text;
+	//var onlineList;
+
+	onlineList_JSON.push({username:username, userColor:userColor});//新增一個user
+	
+	console.log("PUSH結果: "+ JSON.stringify(onlineList_JSON));
+	console.log("提取JSON: "+onlineList_JSON[0]);
+	console.log("提取JSON: "+onlineList_JSON[0].username);
+
 }
 
+function removeUsernameFromList( username, userColor )
+{
+	var i;
+	var index;
 
+	for( i = 0 ; i< onlineList_JSON.length ; i++ )
+	{
+		if( onlineList_JSON[i].username == username )
+		{
+			index = i;			
+			console.log("找到 username"+username+", index="+index);
+			break;
+		}    	
+	}
+	onlineList_JSON.splice( index, 1 );
+	console.log("刪除 Username:"+username+", index="+index);
+	printOnlineList_JSON();
+}
+
+function printOnlineList_JSON()
+{
+	console.log("更新後名單");
+	for( i = 0 ; i< onlineList_JSON.length ; i++ )
+	{
+		console.log("{username: "+onlineList_JSON[i].username+", userColor: "+onlineList_JSON[i].userColor+"}");
+	}
+}
