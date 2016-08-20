@@ -106,7 +106,7 @@
 		  socket.on('add user',function(data){		  
           appendMessageWithColor(data.username+"已加入","green");
 
-          updateOnlineListWithColor(data.onlineList);
+          //updateOnlineListWithColor(data.onlineList);
       });
 		
       //監聽新訊息事件
@@ -122,6 +122,11 @@
 		  //監聽有user離開
       socket.on('user left',function(data){
         appendMessageWithColor(data.username+"已離開","red");
+      });
+
+      //監聽更新onlin-list名單
+      socket.on('update onlineList',function(data){
+        updateOnlineListWithColor(data.onlineList);
       });
 
       $('#send').click(function(){
@@ -148,18 +153,6 @@
             firstTyping = false; //還沒送出訊息，不需要再次列印 user is typing 訊息
 		      }
       });
-
-		    /*
-        function appendMessage(msg){
-          $('#messages').append($('<li>').text(msg));
-		  
-		  //prompt("userColor",""+userColor);		  
-		  //$("li:last").css("background-color", userColor);
-		  
-          var message = document.getElementById("message_block");
-          message.scrollTop = message.scrollHeight;
-
-        }*/
 		
   		function appendMessageWithColor(msg, userColor)
       {
@@ -174,15 +167,6 @@
 
       function updateOnlineListWithColor(onlineList)
       {
-        /*
-        var out = "";
-        var i;
-        for(i = 0; i < onlineList.length; i++) 
-        {
-            out += ' <li> i=' + i +', '+ onlineList[i].username + ' </li><br> ';
-        }
-        document.getElementById("online-list").innerHTML = out;
-        */
 
         $('#online-list').empty();//先清空child elements
 
@@ -195,20 +179,12 @@
             $('#online-list').append($('<br>'));//換行
         }        
         //document.getElementById("online-list").innerHTML = out;
-        
-
       }
-
-
 
     });
       
     </script>
-
-    
-
   </head>
-
 
   <body>
 
@@ -226,16 +202,7 @@
 
       </div>
     </div>
-
-<script>
-
-
-</script>
-
-
-<script src="online.js"></script>
-    
-    
+        
     <input id="m" autocomplete="off" /><button id="send">Send</button>
 
   </body>
