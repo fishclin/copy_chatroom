@@ -50,12 +50,20 @@ io.on('connection', function(socket){
 			msg:msg.text,
 			userColor:msg.userColor
 		});
+	});
 
-		io.emit('A', {
+	//監聽private私訊
+	socket.on('private message', function(msg){
+
+		console.log(socket.username+":"+msg.text+", userColor:"+msg.userColor);
+
+		//以個人名字為端口，發送private message
+		io.emit( msg.privateName , {
 			username:socket.username,
-			msg:"這是額外對A的私訊",
+			msg:msg.text,
 			userColor:"black"
 		});
+
 	});
 
 	//監聽正在打字
