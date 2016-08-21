@@ -77,6 +77,21 @@ io.on('connection', function(socket){
 		});
 	});
 	
+	//監聽private對象正在打字
+	socket.on('user is typing for private', function(msg){
+
+		console.log(socket.username+" is typing for private: "+msg.privateName);
+
+  		//發佈新訊息給私訊對象
+		io.emit( msg.privateName, {
+
+			username:socket.username,
+			msg:socket.username+"正在打字",
+			userColor:"black"
+
+		});
+	});
+
 	//監聽離開聊天室
 	socket.on('disconnect',function(){
 		
