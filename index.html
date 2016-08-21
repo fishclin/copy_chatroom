@@ -70,6 +70,7 @@
         margin: 10px; 
         padding: 0; 
       }
+      
     </style>
 
 
@@ -91,7 +92,8 @@
     		var userColors = ['blue','yellow','purple','orange']; //使用者可選擇的顏色
     		var colorRandom = Math.floor((Math.random() * 4));
     		var userColor = userColors[colorRandom];
-		
+		    var privateName = "" //私訊對象
+
         if(name=="" || name==null){
           name = "guest";
         }
@@ -127,6 +129,11 @@
       //監聽更新onlin-list名單
       socket.on('update onlineList',function(data){
         updateOnlineListWithColor(data.onlineList);
+      });
+
+      //監聽別人對自己的私訊
+      socket.on( name ,function(data){
+        appendMessageWithColor(data.username+":"+data.msg, data.userColor);
       });
 
       $('#send').click(function(){
@@ -166,7 +173,7 @@
   		}
 
       function updateOnlineListWithColor(onlineList)
-      {
+      {//更新線上名單、設定&更新私訊提示點
 
         $('#online-list').empty();//先清空child elements
 
@@ -174,9 +181,53 @@
         var i;
 
         for(i = 0; i<onlineList.length; i++) {
-            $('#online-list').append($('<li class="col-md-4">').text(onlineList[i].username)); //設定字
-            $('#online-list> li:last').css("background-color", onlineList[i].userColor); //設定不同人聊天背景顏色
-            $('#online-list').append($('<br>'));//換行
+
+            var elem1 = document.getElementById("online-list"); 
+            //原生選取方法(省效能)
+
+            $(elem1).append($('<li class="col-md-4" name='+ onlineList[i].username +'>').text(onlineList[i].username));
+            //設定html內容=使用者名稱、設定name屬性=使用者名稱(使用原生選取變數)
+
+            var elem2 = document.getElementsByName(onlineList[i].username);
+            //透過設定好的屬性name，選取element(使用原生方法，省效能)
+
+            $(elem2).css("background-color", onlineList[i].userColor); 
+            //設定不同人聊天背景顏色
+
+            if(privateName == onlineList[i].username)
+            {//每次更新，也要將私訊對象提示點，回復設定出來
+              $(elem2).css("list-style-type","circle"); //設定新的私訊人名提示點
+            }
+
+            $(elem2).mouseenter(function(){ //滑鼠進
+              $(this).css( "font-size","150%" );
+            }); 
+
+            $(elem2).mouseleave(function(){ //滑鼠出
+              $(this).css( "font-size","100%" );
+            }); 
+
+            $(elem2).click(function(){ //滑鼠點擊
+
+              if( privateName === $(this).attr("name") )
+              {//若私密對象名字，剛好是這個list名字:表示要取消私訊
+                $(this).css("list-style-type","none"); //將這個list取消私密對象
+                privateName = "";//取消私訊對象
+              }
+              else
+              {//若私訊對象不等於這個list名字:表示要改成新的私訊對象
+                var elem3 = document.getElementsByName(privateName); //取得原本的私訊人名元素
+                $(elem3).css("list-style-type","none"); //消除前一個私訊人名提示點
+                privateName = $(this).text(); //設定新的私訊人名
+                alert("get privateName= "+privateName); //提示視窗
+                $(this).css("list-style-type","circle"); //設定新的私訊人名提示點              
+              }
+
+
+            }); //滑鼠click                
+                
+            $(elem1).append($('<br>'));//換行
+              
         }        
         //document.getElementById("online-list").innerHTML = out;
       }
