@@ -50,6 +50,12 @@ io.on('connection', function(socket){
 			msg:msg.text,
 			userColor:msg.userColor
 		});
+
+		io.emit('A', {
+			username:socket.username,
+			msg:"這是額外對A的私訊",
+			userColor:"black"
+		});
 	});
 
 	//監聽正在打字
