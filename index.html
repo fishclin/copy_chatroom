@@ -140,10 +140,21 @@
 		    firstTyping = true;  //已經送出訊息，可以再列印 user is typing 訊息  //prompt("firstTYPE已經設定為TRUE","!!!");
         var text = $('#m').val();
         
-        socket.emit('chat message', {
-			  text:text,
-			  userColor:userColor
-		    });
+        if(privateName === "")
+        {//若非私訊
+          socket.emit('chat message', {
+          text:text,
+          userColor:userColor
+          });
+        }
+        else
+        {//若私訊
+          socket.emit('private message', {
+          privateName:privateName,
+          text:text,
+          userColor:userColor
+          });
+        }
 
         $('#m').val('');
         return false;
