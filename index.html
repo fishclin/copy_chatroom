@@ -112,8 +112,11 @@
       });
 		
       //監聽新訊息事件
-      socket.on('chat message', function(data){		  
-        appendMessageWithColor(data.username+":"+data.msg, data.userColor);
+      socket.on('chat message', function(data){
+          if( data.username != name )
+          {//若接收到的是別人送來的訊息才要處理，自己的則不用理會(已經PO出)
+            appendMessageWithColor(data.username+":"+data.msg, data.userColor);
+          }
       });
 
 		  //監聽正在打字
@@ -121,6 +124,13 @@
         appendMessageWithColor(data.username+"正在打字","gray");
       });
 		
+      //監聽private私訊對象正在打字
+      /*
+      socket.on('user is typing for private',function(data){
+        appendMessageWithColor(data.username+"正在打字","black");
+      });
+      */
+
 		  //監聽有user離開
       socket.on('user left',function(data){
         appendMessageWithColor(data.username+"已離開","red");
@@ -133,7 +143,7 @@
 
       //監聽別人對自己的私訊
       socket.on( name ,function(data){
-        appendMessageWithColor(data.username+":"+data.msg, data.userColor);
+        appendMessageWithColor(data.username+" to "+ name +": "+data.msg, data.userColor);
       });
 
       $('#send').click(function(){
@@ -142,13 +152,20 @@
         
         if(privateName === "")
         {//若非私訊
+          
+          appendMessageWithColor( name+":"+text, userColor );//直接在本機端顯示
+
           socket.emit('chat message', {
           text:text,
           userColor:userColor
           });
+
         }
         else
         {//若私訊
+
+          appendMessageWithColor( name+" to "+privateName+": "+text, "black" );//直接在本機端顯示
+
           socket.emit('private message', {
           privateName:privateName,
           text:text,
@@ -160,15 +177,30 @@
         return false;
       });
 
-      $("#m").keydown(function(event){
+      $("#m").keydown(function(event)
+      {//當鍵盤按下時的動作
 		
-		      if ( event.which == 13 ){
+		      if ( event.which == 13 )
+          {//若是Enter鍵
+
             $('#send').click();		
+
           }
-		  
-		      else if( firstTyping == true ){
-		        socket.emit('user is typing', name);
+		      else if( firstTyping == true )
+          {//若非Enter鍵
+
+            if(privateName === "")
+            {//若沒有private私訊對象
+              socket.emit('user is typing', name);
+            }
+		        else
+            {//若有private私訊對象，只傳送送給私訊對象
+              socket.emit('user is typing for private', {
+                privateName:privateName
+              });
+            }
             firstTyping = false; //還沒送出訊息，不需要再次列印 user is typing 訊息
+
 		      }
       });
 		
@@ -265,7 +297,7 @@
       </div>
     </div>
         
-    <input id="m" autocomplete="off" /><button id="send">Send</button>
+    <input id="m" autocomplete="off" autofocus/><button id="send">Send</button>
 
   </body>
 </html>
