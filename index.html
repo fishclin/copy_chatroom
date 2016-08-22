@@ -16,42 +16,50 @@
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
       #m{ 
+
         border: 2px solid black; 
-        padding: 10px; 
-        width: 90%; 
-        margin: .5%; 
+        border-radius: 2px;
+        /*padding: 10px; */
+        width: 91%; 
+        /*margin: .5%; */
         position: fixed; 
         bottom: 0;
+        height: 6%;
       }
       #send{ 
-        width: 8%; 
-        margin: .5%; 
+
+        border-radius: 20px;
+        width: 9.5%; 
+        /*margin: .5%; */
         background: rgb(121,2,2);
-        color:white; 
-        
+        color:white;         
         padding: 10px; 
         position: fixed; 
         bottom: 0;
         right:5px;
       }
       #message_block{
-        
+
+        border: solid 2px black; 
+        border-radius: 10px;
         position: absolute;
         top:0;
         bottom:5%;
-        margin-bottom:10px;
-        border: solid 2px black; 
+        margin-bottom:10px;        
         overflow:auto;
+        height: 93%;
       }
       #online_block{
-        
+
+        border: solid 2px black; 
+        border-radius: 10px;
         position: absolute;
         top:0;
-        left:70%;
+        left:84%;
         bottom:5%;
         margin-bottom:10px;
-        border: solid 2px black; 
         overflow:auto;
+        height: 93%;
       }
       #messages { 
         list-style-type: none; 
@@ -61,6 +69,9 @@
       #messages li { 
         padding: 5px 10px; 
         font-size:16pt;
+        word-wrap: break-word; /*字過多則換行*/
+        border-bottom: 2px dotted blue; /*底線隔線樣式*/
+        border-radius: 5px; /*圓角*/
       }
       #messages li:nth-child(odd) { 
         background: #eee; 
@@ -69,6 +80,7 @@
         list-style-type: none; 
         margin: 10px; 
         padding: 0; 
+        word-wrap: break-word; /*字過多則換行*/
       }
       
     </style>
@@ -89,8 +101,15 @@
         var name = prompt("請輸入暱稱","guest");
 		
     		var firstTyping = true;		
-    		var userColors = ['blue','yellow','purple','orange']; //使用者可選擇的顏色
-    		var colorRandom = Math.floor((Math.random() * 4));
+    		var userColors = [ 'rgba(255, 64, 0, 0.5)','rgba(255, 128, 0, 0.5)','rgba(255, 191, 0, 0.5)',
+        'rgba(255, 255, 0, 0.5)','rgba(191, 255, 0, 0.5)','rgba(128, 255, 0, 0.5)',
+        'rgba(64, 255, 0, 0.5)','rgba(0, 255, 0, 0.5)','rgba(0, 255, 64, 0.5)',
+        'rgba(20, 255, 128, 0.5)','rgba(0, 255, 191, 0.5)','rgba(0, 255, 255, 0.5)',
+        'rgba(0, 191, 255, 0.5)','rgba(0, 128, 255, 0.5)','rgba(0, 64, 255, 0.5)',
+        'rgba(0, 0, 255, 0.5)','rgba(64, 0, 255, 0.5)','rgba(128, 0, 255, 0.5)',
+        'rgba(191, 0, 255, 0.5)','rgba(255, 0, 255, 0.5)','rgba(255, 0, 191, 0.5)',
+        'rgba(255, 0, 128, 0.5)','rgba(255, 0, 64, 0.5)']; //使用者可選擇的顏色
+    		var colorRandom = Math.floor((Math.random() * 23));
     		var userColor = userColors[colorRandom];
 		    var privateName = "" //私訊對象
 
@@ -122,14 +141,8 @@
 		  //監聽正在打字
 		  socket.on('user is typing',function(data){
         appendMessageWithColor(data.username+"正在打字","gray");
+        appendIsTyping(data.username);
       });
-		
-      //監聽private私訊對象正在打字
-      /*
-      socket.on('user is typing for private',function(data){
-        appendMessageWithColor(data.username+"正在打字","black");
-      });
-      */
 
 		  //監聽有user離開
       socket.on('user left',function(data){
@@ -164,7 +177,7 @@
         else
         {//若私訊
 
-          appendMessageWithColor( name+" to "+privateName+": "+text, "black" );//直接在本機端顯示
+          appendMessageWithColor( name+" to "+privateName+": "+text, userColor );//直接在本機端顯示
 
           socket.emit('private message', {
           privateName:privateName,
@@ -196,17 +209,18 @@
 		        else
             {//若有private私訊對象，只傳送送給私訊對象
               socket.emit('user is typing for private', {
-                privateName:privateName
+                privateName:privateName,
+                userColor:userColor
               });
             }
             firstTyping = false; //還沒送出訊息，不需要再次列印 user is typing 訊息
 
 		      }
       });
-		
+		  
   		function appendMessageWithColor(msg, userColor)
       {
-  		  $('#messages').append($('<li class="col-md-12">').text(msg)); //設定字
+  		  $('#messages').append($('<li class="col-lg-12 col-md-12 col-xs-12">').append($('<div>')).text(msg)); //設定字
   		  $('#messages> li:last').css("background-color", userColor); //設定不同人聊天背景顏色
         
         //$("li:last").css("background-color", userColor); //設定名單顏色
@@ -214,6 +228,11 @@
         var message = document.getElementById("message_block");//設定卷軸Bar
         message.scrollTop = message.scrollHeight;
   		}
+
+      function appendIsTyping(data.username)
+      {
+
+      }
 
       function updateOnlineListWithColor(onlineList)
       {//更新線上名單、設定&更新私訊提示點
@@ -228,7 +247,7 @@
             var elem1 = document.getElementById("online-list"); 
             //原生選取方法(省效能)
 
-            $(elem1).append($('<li class="col-md-4" name='+ onlineList[i].username +'>').text(onlineList[i].username));
+            $(elem1).append($('<li class="col-lg-12 col-md-12 col-xs-12" name='+ onlineList[i].username +'>').text(onlineList[i].username));
             //設定html內容=使用者名稱、設定name屬性=使用者名稱(使用原生選取變數)
 
             var elem2 = document.getElementsByName(onlineList[i].username);
@@ -243,11 +262,25 @@
             }
 
             $(elem2).mouseenter(function(){ //滑鼠進
-              $(this).css( "font-size","150%" );
+              $(this).css( 
+               {
+                  /* Rotate div */
+                  "-ms-transform": "rotate(7deg)", /* IE 9 */
+                  "-webkit-transform": "rotate(7deg)", /* Chrome, Safari, Opera */
+                  "transform": "rotate(7deg)",
+                  "font-size":"150%" 
+                });
             }); 
 
             $(elem2).mouseleave(function(){ //滑鼠出
-              $(this).css( "font-size","100%" );
+              $(this).css(
+              {
+                /* Rotate div */
+                "-ms-transform": "rotate(0deg)", /* IE 9 */
+                "-webkit-transform": "rotate(0deg)", /* Chrome, Safari, Opera */
+                "transform": "rotate(0deg)",
+                "font-size":"100%"
+                });
             }); 
 
             $(elem2).click(function(){ //滑鼠點擊
@@ -262,7 +295,7 @@
                 var elem3 = document.getElementsByName(privateName); //取得原本的私訊人名元素
                 $(elem3).css("list-style-type","none"); //消除前一個私訊人名提示點
                 privateName = $(this).text(); //設定新的私訊人名
-                alert("get privateName= "+privateName); //提示視窗
+                alert("您將"+privateName+"設定為私訊對象"); //提示視窗
                 $(this).css("list-style-type","circle"); //設定新的私訊人名提示點              
               }
 
@@ -284,20 +317,18 @@
 
     <div class="container-fluid" >
       <div class="row">
-
-        <div id="message_block" class="col-md-8">
+        <div id="message_block" class="col-lg-10 col-md-10 col-xs-10">
           <ul id="messages"></ul>
         </div>
 
-        <div id="online_block" class="col-md-4">
+        <div id="online_block" class="col-lg-2 col-md-2 col-xs-2">
           <ul id="online-list">
           </ul>
         </div>
-
       </div>
     </div>
-        
-    <input id="m" autocomplete="off" autofocus/><button id="send">Send</button>
-
+    <div class="row">
+      <input id="m" autocomplete="off" class="col-lg-12 col-md-12 col-xs-12" autofocus/><button id="send">Send</button>
+    </div>
   </body>
 </html>
