@@ -141,7 +141,6 @@
 		  //監聽正在打字
 		  socket.on('user is typing',function(data){
         appendMessageWithColor(data.username+"正在打字","gray");
-        appendIsTyping(data.username);
       });
 
 		  //監聽有user離開
@@ -217,7 +216,7 @@
 
 		      }
       });
-		  
+		
   		function appendMessageWithColor(msg, userColor)
       {
   		  $('#messages').append($('<li class="col-lg-12 col-md-12 col-xs-12">').append($('<div>')).text(msg)); //設定字
@@ -228,11 +227,6 @@
         var message = document.getElementById("message_block");//設定卷軸Bar
         message.scrollTop = message.scrollHeight;
   		}
-
-      function appendIsTyping(data.username)
-      {
-
-      }
 
       function updateOnlineListWithColor(onlineList)
       {//更新線上名單、設定&更新私訊提示點
