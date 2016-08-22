@@ -61,7 +61,7 @@ io.on('connection', function(socket){
 		io.emit( msg.privateName , {
 			username:socket.username,
 			msg:msg.text,
-			userColor:"black"
+			userColor:msg.userColor
 		});
 
 	});
@@ -87,7 +87,7 @@ io.on('connection', function(socket){
 
 			username:socket.username,
 			msg:socket.username+"正在打字",
-			userColor:"black"
+			userColor:msg.userColor
 
 		});
 	});
