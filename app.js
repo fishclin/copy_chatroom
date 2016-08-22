@@ -90,6 +90,12 @@ io.on('connection', function(socket){
 			userColor:msg.userColor
 
 		});
+
+		/*
+		//發佈is typing for private 提示給私訊對象
+		io.emit( msg.privateName+' is typing for private', {
+			username:socket.username
+		});*/
 	});
 
 	//監聽離開聊天室
