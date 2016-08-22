@@ -126,8 +126,6 @@
 		  //監聽新user加入
 		  socket.on('add user',function(data){		  
           appendMessageWithColor(data.username+"已加入","green");
-
-          //updateOnlineListWithColor(data.onlineList);
       });
 		
       //監聽新訊息事件
@@ -141,7 +139,15 @@
 		  //監聽正在打字
 		  socket.on('user is typing',function(data){
         appendMessageWithColor(data.username+"正在打字","gray");
+        //appendIsTyping(data.username);
       });
+
+      /*
+      //監聽private對象正在打字
+      socket.on(name+' user is typing',function(data){
+        //appendMessageWithColor(data.username+"正在打字","gray");
+        appendIsTyping(data.username);
+      });*/
 
 		  //監聽有user離開
       socket.on('user left',function(data){
@@ -155,7 +161,8 @@
 
       //監聽別人對自己的私訊
       socket.on( name ,function(data){
-        appendMessageWithColor(data.username+" to "+ name +": "+data.msg, data.userColor);
+        //appendMessageWithColor(data.username+" to "+ name +": "+data.msg, data.userColor);
+        appendMessageForPrivate(data.username+" to "+ name +": "+data.msg, data.userColor);
       });
 
       $('#send').click(function(){
@@ -176,7 +183,8 @@
         else
         {//若私訊
 
-          appendMessageWithColor( name+" to "+privateName+": "+text, userColor );//直接在本機端顯示
+          //appendMessageWithColor( name+" to "+privateName+": "+text, userColor );//直接在本機端顯示
+          appendMessageForPrivate( name+" to "+privateName+": "+text, userColor );//直接在本機端顯示
 
           socket.emit('private message', {
           privateName:privateName,
@@ -228,6 +236,25 @@
         message.scrollTop = message.scrollHeight;
   		}
 
+      function appendMessageForPrivate(msg, userColor)
+      {
+        $('#messages').append($('<li class="col-lg-12 col-md-12 col-xs-12">').append($('<div>')).text(msg)); //設定字
+        $('#messages> li:last').css("background-color", userColor); //設定不同人聊天背景顏色
+        $('#messages> li:last').css("border", "5px solid rgb(255, 191, 0)"); //設定不同人聊天背景顏色
+        //$("li:last").css("background-color", userColor); //設定名單顏色
+
+        var message = document.getElementById("message_block");//設定卷軸Bar
+        message.scrollTop = message.scrollHeight;
+      }
+
+
+      /*
+      function appendIsTyping(username)
+      {
+        var elem = document.getElementsByName(username);
+        $(elem).after('<div class="is typing tip" > is Typing </div>');
+      }*/
+
       function updateOnlineListWithColor(onlineList)
       {//更新線上名單、設定&更新私訊提示點
 
@@ -241,7 +268,7 @@
             var elem1 = document.getElementById("online-list"); 
             //原生選取方法(省效能)
 
-            $(elem1).append($('<li class="col-lg-12 col-md-12 col-xs-12" name='+ onlineList[i].username +'>').text(onlineList[i].username));
+            $(elem1).append($('<li class="col-lg-8 col-md-8 col-xs-8" name='+ onlineList[i].username +'>').text(onlineList[i].username));
             //設定html內容=使用者名稱、設定name屬性=使用者名稱(使用原生選取變數)
 
             var elem2 = document.getElementsByName(onlineList[i].username);
